@@ -1,1 +1,92 @@
 @import "tailwindcss";
+
+:root {
+  /* Fantasy color palette - earthy, aged, mystical */
+  --parchment: #f4e8d0;
+  --parchment-dark: #e8d7b8;
+  --aged-paper: #ddc9a3;
+  --dark-wood: #3d2817;
+  --rich-wood: #5c3a21;
+  --gold: #d4af37;
+  --gold-dark: #b8941f;
+  --copper: #b87333;
+  --scroll-bg: #faf6eb;
+  --shadow-deep: rgba(29, 17, 8, 0.4);
+  --ink: #2a1810;
+  --ink-light: #4a3428;
+  --mystical-purple: #6a4c93;
+  --mystical-blue: #4a6fa5;
+  --success-green: #5d8a3a;
+  --danger-red: #a23e3e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  font-family: 'Crimson Text', serif;
+  background: linear-gradient(135deg, var(--aged-paper) 0%, var(--parchment-dark) 100%);
+  background-attachment: fixed;
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Parchment texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 119, 101, 0.03) 2px, rgba(139, 119, 101, 0.03) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(139, 119, 101, 0.03) 2px, rgba(139, 119, 101, 0.03) 4px);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.3;
+}
+
+#root {
+  position: relative;
+  z-index: 2;
+}
+
+/* Fantasy heading font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--dark-wood);
+}
+
+/* Scrollbar styling for fantasy theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--parchment-dark);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rich-wood);
+  border-radius: 5px;
+  border: 2px solid var(--parchment-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dark-wood);
+}

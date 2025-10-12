@@ -1,1 +1,282 @@
+/* Card-like containers with parchment styling */
+.fantasy-card {
+  background: linear-gradient(135deg, var(--scroll-bg) 0%, var(--parchment) 100%);
+  border: 3px solid var(--rich-wood);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px var(--shadow-deep),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  position: relative;
+}
 
+.fantasy-card::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+/* Dice styling - look like actual dice */
+.fantasy-die {
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, #f8f4e8 0%, #e8dcc5 100%);
+  border: 3px solid var(--dark-wood);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--dark-wood);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fantasy-die:active {
+  transform: scale(0.95);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.fantasy-die.selected {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  border-color: var(--gold-dark);
+  box-shadow:
+    0 0 20px rgba(212, 175, 55, 0.6),
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Operator runes styling */
+.fantasy-operator {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: linear-gradient(135deg, var(--mystical-purple) 0%, #563575 100%);
+  border: 3px solid var(--dark-wood);
+  border-radius: 50%;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  user-select: none;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fantasy-operator:active {
+  transform: scale(0.95);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.fantasy-operator.selected {
+  background: linear-gradient(135deg, var(--copper) 0%, #8b5a3c 100%);
+  border-color: var(--gold);
+  box-shadow:
+    0 0 20px rgba(184, 115, 51, 0.6),
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  animation: pulse 1s infinite;
+}
+
+/* Button styling - ornate and fantasy */
+.fantasy-button {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  padding: 0.875rem 1.75rem;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  border: 3px solid var(--dark-wood);
+  border-radius: 8px;
+  color: var(--dark-wood);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 1rem;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fantasy-button:hover {
+  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.fantasy-button:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.fantasy-button.secondary {
+  background: linear-gradient(135deg, var(--parchment) 0%, var(--aged-paper) 100%);
+  border-color: var(--rich-wood);
+}
+
+.fantasy-button.secondary:hover {
+  background: linear-gradient(135deg, var(--aged-paper) 0%, var(--parchment) 100%);
+}
+
+.fantasy-button.small {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+/* Chart container styling */
+.fantasy-chart {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  border: 2px solid var(--aged-paper);
+  padding: 1rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Table styling */
+.fantasy-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.fantasy-table thead {
+  background: linear-gradient(135deg, var(--rich-wood) 0%, var(--dark-wood) 100%);
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+}
+
+.fantasy-table thead th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--gold);
+}
+
+.fantasy-table thead th:first-child {
+  border-top-left-radius: 6px;
+}
+
+.fantasy-table thead th:last-child {
+  border-top-right-radius: 6px;
+}
+
+.fantasy-table tbody tr {
+  background: var(--scroll-bg);
+  border-bottom: 1px solid var(--aged-paper);
+  transition: background 0.2s ease;
+}
+
+.fantasy-table tbody tr:hover {
+  background: var(--parchment);
+}
+
+.fantasy-table tbody tr.best-attempt {
+  background: linear-gradient(135deg, rgba(93, 138, 58, 0.2) 0%, rgba(93, 138, 58, 0.1) 100%);
+  border-left: 4px solid var(--success-green);
+}
+
+.fantasy-table tbody td {
+  padding: 0.75rem 1rem;
+  color: var(--ink);
+}
+
+/* Section header styling */
+.fantasy-section-header {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  color: var(--dark-wood);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Expression display */
+.expression-display {
+  font-family: 'Cinzel', serif;
+  font-size: 1.25rem;
+  color: var(--mystical-purple);
+  font-weight: 600;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(106, 76, 147, 0.1);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 2px solid rgba(106, 76, 147, 0.3);
+}
+
+/* Help text styling */
+.help-text {
+  font-size: 0.875rem;
+  color: var(--ink-light);
+  font-style: italic;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  border-left: 4px solid var(--copper);
+}
+
+/* Distance badge */
+.distance-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, var(--mystical-blue) 0%, #3a5a8a 100%);
+  color: white;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  border-radius: 20px;
+  border: 2px solid var(--dark-wood);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 0.875rem;
+}
+
+/* Mobile optimizations - keeping larger touch targets */
+@media (max-width: 640px) {
+  .fantasy-die {
+    /* Maintain 4rem size for better touch targets */
+  }
+
+  .fantasy-operator {
+    /* Maintain 3.5rem size for better touch targets */
+  }
+}

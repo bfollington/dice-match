@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from 'recharts';
 import _ from 'lodash';
 import * as math from 'mathjs';
+import './App.css';
 
 // Dice faces
 const DICE = [2, 4, 6, 8, 12];
@@ -343,51 +344,53 @@ const DiceProbabilityGame = () => {
 
   // Main render
   return (
-    <div className="flex flex-col w-full h-full p-4 space-y-4 bg-gray-50">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dice Probability Matching Game</h1>
+    <div className="flex flex-col w-full min-h-screen p-3 sm:p-6 md:p-8 gap-4 sm:gap-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl" style={{ fontFamily: 'Cinzel, serif', textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
+          Dice Match
+        </h1>
         <button
           onClick={generateNewPuzzle}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="fantasy-button"
         >
           New Puzzle
         </button>
       </div>
 
       {/* Target Expression */}
-      <div className="p-4 bg-white rounded shadow">
-        <h2 className="text-lg font-semibold mb-2">Target Distribution</h2>
-        <div className="text-gray-500 mb-2">
-          Try to match this probability distribution by rearranging your dice and operators
+      <div className="fantasy-card p-4 sm:p-6">
+        <h2 className="fantasy-section-header text-xl sm:text-2xl">Target</h2>
+        <div className="help-text text-base sm:text-lg">
+          Match this probability distribution by rearranging your dice and operators
         </div>
       </div>
 
       {/* Chart */}
-      <div className="p-4 bg-white rounded shadow">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">Probability Distributions</h2>
-          <div className="flex space-x-2">
+      <div className="fantasy-card p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+          <h2 className="fantasy-section-header text-xl sm:text-2xl mb-0 border-0 pb-0">Distributions</h2>
+          <div className="flex gap-2">
             <button
               onClick={() => setGraphType('filled-line')}
-              className={`px-2 py-1 text-sm rounded ${graphType === 'filled-line' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              className={`fantasy-button small ${graphType !== 'filled-line' ? 'secondary' : ''}`}
             >
               Filled
             </button>
             <button
               onClick={() => setGraphType('line')}
-              className={`px-2 py-1 text-sm rounded ${graphType === 'line' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              className={`fantasy-button small ${graphType !== 'line' ? 'secondary' : ''}`}
             >
               Line
             </button>
             <button
               onClick={() => setGraphType('bar')}
-              className={`px-2 py-1 text-sm rounded ${graphType === 'bar' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              className={`fantasy-button small ${graphType !== 'bar' ? 'secondary' : ''}`}
             >
               Bar
             </button>
           </div>
         </div>
-        <div className="h-64">
+        <div className="fantasy-chart h-56 sm:h-64 md:h-80">
           <ResponsiveContainer width="100%" height="100%">
             {graphType === 'bar' ? (
               <BarChart data={createChartData()} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -479,9 +482,12 @@ const DiceProbabilityGame = () => {
       </div>
 
       {/* Current Expression Editor */}
-      <div className="p-4 bg-white rounded shadow">
-        <h2 className="text-lg font-semibold mb-2">Your Expression: {getCurrentExpression()}</h2>
-        <div className="flex items-center space-x-2 text-lg">
+      <div className="fantasy-card p-4 sm:p-6">
+        <h2 className="fantasy-section-header text-xl sm:text-2xl">Your Expression</h2>
+        <div className="expression-display mb-4 text-lg sm:text-xl">
+          {getCurrentExpression()}
+        </div>
+        <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-3 mb-4">
           {currentDice.map((die, index) => (
             <React.Fragment key={`dice-${index}`}>
               <div
@@ -490,10 +496,11 @@ const DiceProbabilityGame = () => {
                 onDragOver={handleDragOver}
                 onDrop={() => handleDrop(index, 'dice')}
                 onClick={() => handleItemSelect(index, 'dice')}
-                className={`flex items-center justify-center w-12 h-12 border-2 rounded bg-white cursor-pointer
-                  ${selectedItem && selectedItem.type === 'dice' && selectedItem.index === index
-                    ? 'border-yellow-500 bg-yellow-100'
-                    : 'border-blue-500'}`}
+                className={`fantasy-die flex items-center justify-center ${
+                  selectedItem && selectedItem.type === 'dice' && selectedItem.index === index
+                    ? 'selected'
+                    : ''
+                }`}
               >
                 d{die}
               </div>
@@ -504,10 +511,11 @@ const DiceProbabilityGame = () => {
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(index, 'operator')}
                   onClick={() => handleItemSelect(index, 'operator')}
-                  className={`flex items-center justify-center w-10 h-10 border-2 rounded bg-white cursor-pointer
-                    ${selectedItem && selectedItem.type === 'operator' && selectedItem.index === index
-                      ? 'border-yellow-500 bg-yellow-100'
-                      : 'border-red-500'}`}
+                  className={`fantasy-operator flex items-center justify-center ${
+                    selectedItem && selectedItem.type === 'operator' && selectedItem.index === index
+                      ? 'selected'
+                      : ''
+                  }`}
                 >
                   {currentOperators[index]}
                 </div>
@@ -515,36 +523,48 @@ const DiceProbabilityGame = () => {
             </React.Fragment>
           ))}
         </div>
-        <div className="mt-4 text-sm">
-          <p>
+        <div className="flex flex-col gap-3">
+          <div className="help-text text-base sm:text-lg">
             {selectedItem
-              ? `Select another ${selectedItem.type === 'dice' ? 'die' : 'operator'} to swap with`
-              : 'Tap an item to select, then tap another to swap. You can also drag and drop on desktop.'}
-          </p>
-          <p>Current distance from target: {attempts.length > 0 ? attempts[0].distance.toFixed(4) : "N/A"}</p>
+              ? `Select another ${selectedItem.type === 'dice' ? 'die' : 'operator'} to swap`
+              : 'Tap to select, then tap another to swap. Drag and drop works on desktop.'}
+          </div>
+          {attempts.length > 0 && (
+            <div className="text-center">
+              <span className="distance-badge text-base sm:text-lg">
+                Distance: {attempts[0].distance.toFixed(4)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Previous Attempts */}
-      <div className="p-4 bg-white rounded shadow">
-        <h2 className="text-lg font-semibold mb-2">Best Attempts</h2>
-        <div className="max-h-48 overflow-y-auto">
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th className="text-left p-2">Expression</th>
-                <th className="text-left p-2">Distance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {attempts.slice(0, 5).map((attempt, i) => (
-                <tr key={i} className={i === 0 ? "bg-green-100" : ""}>
-                  <td className="p-2">{attempt.expression}</td>
-                  <td className="p-2">{attempt.distance.toFixed(4)}</td>
+      <div className="fantasy-card p-4 sm:p-6">
+        <h2 className="fantasy-section-header text-xl sm:text-2xl">Best Attempts</h2>
+        <div className="max-h-48 sm:max-h-64 overflow-y-auto overflow-x-auto">
+          {attempts.length === 0 ? (
+            <div className="help-text text-center py-8 text-base sm:text-lg">
+              No attempts yet. Start swapping to see your results!
+            </div>
+          ) : (
+            <table className="fantasy-table">
+              <thead>
+                <tr>
+                  <th className="text-base sm:text-lg">Expression</th>
+                  <th className="text-base sm:text-lg">Distance</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {attempts.slice(0, 5).map((attempt, i) => (
+                  <tr key={i} className={i === 0 ? "best-attempt" : ""}>
+                    <td className="font-mono text-base sm:text-lg">{attempt.expression}</td>
+                    <td className="font-semibold text-base sm:text-lg">{attempt.distance.toFixed(4)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
