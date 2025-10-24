@@ -465,7 +465,7 @@ const DiceProbabilityGame = () => {
     <div className="flex flex-col w-full min-h-screen p-3 sm:p-6 md:p-8 gap-4 sm:gap-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <h1 className="text-3xl sm:text-4xl md:text-5xl" style={{ fontFamily: 'Cinzel, serif', textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
-          Dice Match
+          Daily Dice Destiny
         </h1>
         <button
           onClick={() => generateNewPuzzle(getPracticeSeed())}
