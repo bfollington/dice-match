@@ -10,6 +10,44 @@ const DICE = [2, 4, 6, 8, 12];
 // Operators
 const OPERATORS = ['+', '-', '*', '/'];
 
+// Seeded random number generator (Mulberry32)
+const seededRandom = (seed: number) => {
+  return () => {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+};
+
+// Seeded shuffle using Fisher-Yates algorithm
+const seededShuffle = <T,>(array: T[], seed: number): T[] => {
+  const rng = seededRandom(seed);
+  const shuffled = [...array];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled;
+};
+
+// Get today's date as a seed (YYYYMMDD)
+const getTodaysSeed = (): number => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return parseInt(`${year}${month}${day}`);
+};
+
+// Generate a random practice seed that will never conflict with date seeds
+// Date seeds are max 99991231, so we use 100000000+ for practice
+const getPracticeSeed = (): number => {
+  return Math.floor(Math.random() * 900000000) + 100000000; // Range: 100000000-999999999
+};
+
 const DiceProbabilityGame = () => {
   // Game state
   const [targetExpression, setTargetExpression] = useState(null);
@@ -23,17 +61,22 @@ const DiceProbabilityGame = () => {
   const [draggedType, setDraggedType] = useState(null);
   const [graphType, setGraphType] = useState('filled-line'); // Options: 'filled-line', 'line', 'bar'
   const [selectedItem, setSelectedItem] = useState(null); // For tap-to-swap interface
+  const [currentSeed, setCurrentSeed] = useState<number | null>(null); // Track current puzzle seed
 
   // Initialize the game
   useEffect(() => {
     generateNewPuzzle();
   }, []);
 
-  // Generate a new random puzzle
-  const generateNewPuzzle = () => {
-    // Shuffle dice and operators
-    const shuffledDice = _.shuffle([...DICE]);
-    const shuffledOperators = _.shuffle([...OPERATORS]);
+  // Generate a puzzle with optional seed (defaults to today's daily challenge)
+  const generateNewPuzzle = (seed?: number) => {
+    // If no seed provided, use today's seed for daily challenge
+    const puzzleSeed = seed !== undefined ? seed : getTodaysSeed();
+    setCurrentSeed(puzzleSeed);
+
+    // Shuffle dice and operators with seed
+    const shuffledDice = seededShuffle([...DICE], puzzleSeed);
+    const shuffledOperators = seededShuffle([...OPERATORS], puzzleSeed + 1); // Use seed + 1 for operators
 
     // Create a target expression
     const targetExp = createExpression(shuffledDice, shuffledOperators);
@@ -256,9 +299,19 @@ const DiceProbabilityGame = () => {
     };
 
     setAttempts(prev => {
-      const updated = [...prev, newAttempt];
-      // Sort by lowest distance
-      return updated.sort((a, b) => a.distance - b.distance);
+      // Check if this expression already exists
+      const existingIndex = prev.findIndex(a => a.expression === expression);
+
+      if (existingIndex !== -1) {
+        // Expression exists, update its timestamp
+        const updated = [...prev];
+        updated[existingIndex] = newAttempt;
+        return updated.sort((a, b) => a.distance - b.distance);
+      } else {
+        // New expression, add it
+        const updated = [...prev, newAttempt];
+        return updated.sort((a, b) => a.distance - b.distance);
+      }
     });
   };
 
@@ -305,8 +358,8 @@ const DiceProbabilityGame = () => {
     // Normalize and interpolate points for smoother curves
     const rawData = Array.from(allValues).sort((a, b) => a - b).map(value => ({
       value,
-      target: targetMap.get(value) || 0,
-      current: currentMap.get(value) || 0
+      target: currentMap.get(value) || 0,
+      current: targetMap.get(value) || 0
     }));
 
     // Add intermediate points for smoother curves (linear interpolation)
@@ -342,6 +395,71 @@ const DiceProbabilityGame = () => {
     return createExpression(currentDice, currentOperators);
   };
 
+  // Load an expression from history
+  const loadExpression = (expression: string) => {
+    // Parse the expression to extract dice and operators
+    const parts = expression.split(' ');
+    const dice: number[] = [];
+    const operators: string[] = [];
+
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        // Dice value
+        dice.push(parseInt(parts[i]));
+      } else {
+        // Operator
+        operators.push(parts[i]);
+      }
+    }
+
+    // Update state
+    setCurrentDice(dice);
+    setCurrentOperators(operators);
+
+    // Recalculate distribution
+    const newDist = calculateDistribution(expression);
+    setCurrentDistribution(newDist);
+
+    // Reset selection
+    setSelectedItem(null);
+  };
+
+  // Get current expression with parentheses showing evaluation order
+  const getFormattedExpression = () => {
+    if (currentDice.length === 0) return null;
+
+    const parts = [];
+
+    // Add opening parentheses (n-1 for n dice)
+    const numOpenParens = currentDice.length - 2;
+    if (numOpenParens > 0) {
+      parts.push(
+        <span key="open-parens" className="faint-paren">
+          {'('.repeat(numOpenParens)}
+        </span>
+      );
+    }
+
+    // Add first die
+    parts.push(<span key="dice-0">d{currentDice[0]}</span>);
+
+    // Add each operator and die with closing paren
+    for (let i = 0; i < currentOperators.length; i++) {
+      parts.push(<span key={`op-${i}`}> {currentOperators[i]} </span>);
+      parts.push(<span key={`dice-${i + 1}`}>d{currentDice[i + 1]}</span>);
+
+      if (i !== currentOperators.length - 1) {
+        parts.push(
+          <span key={`close-${i}`} className="faint-paren">
+            )
+          </span>
+        );
+      }
+    }
+
+    return parts;
+  };
+
   // Main render
   return (
     <div className="flex flex-col w-full min-h-screen p-3 sm:p-6 md:p-8 gap-4 sm:gap-6">
@@ -350,10 +468,10 @@ const DiceProbabilityGame = () => {
           Dice Match
         </h1>
         <button
-          onClick={generateNewPuzzle}
+          onClick={() => generateNewPuzzle(getPracticeSeed())}
           className="fantasy-button"
         >
-          New Puzzle
+          Practice
         </button>
       </div>
 
@@ -485,7 +603,7 @@ const DiceProbabilityGame = () => {
       <div className="fantasy-card p-4 sm:p-6">
         <h2 className="fantasy-section-header text-xl sm:text-2xl">Your Expression</h2>
         <div className="expression-display mb-4 text-lg sm:text-xl">
-          {getCurrentExpression()}
+          {getFormattedExpression()}
         </div>
         <div className="flex items-center justify-center flex-wrap gap-2 sm:gap-3 mb-4">
           {currentDice.map((die, index) => (
@@ -496,11 +614,10 @@ const DiceProbabilityGame = () => {
                 onDragOver={handleDragOver}
                 onDrop={() => handleDrop(index, 'dice')}
                 onClick={() => handleItemSelect(index, 'dice')}
-                className={`fantasy-die flex items-center justify-center ${
-                  selectedItem && selectedItem.type === 'dice' && selectedItem.index === index
-                    ? 'selected'
-                    : ''
-                }`}
+                className={`fantasy-die flex items-center justify-center ${selectedItem && selectedItem.type === 'dice' && selectedItem.index === index
+                  ? 'selected'
+                  : ''
+                  }`}
               >
                 d{die}
               </div>
@@ -511,11 +628,10 @@ const DiceProbabilityGame = () => {
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(index, 'operator')}
                   onClick={() => handleItemSelect(index, 'operator')}
-                  className={`fantasy-operator flex items-center justify-center ${
-                    selectedItem && selectedItem.type === 'operator' && selectedItem.index === index
-                      ? 'selected'
-                      : ''
-                  }`}
+                  className={`fantasy-operator flex items-center justify-center ${selectedItem && selectedItem.type === 'operator' && selectedItem.index === index
+                    ? 'selected'
+                    : ''
+                    }`}
                 >
                   {currentOperators[index]}
                 </div>
@@ -529,10 +645,10 @@ const DiceProbabilityGame = () => {
               ? `Select another ${selectedItem.type === 'dice' ? 'die' : 'operator'} to swap`
               : 'Tap to select, then tap another to swap. Drag and drop works on desktop.'}
           </div>
-          {attempts.length > 0 && (
+          {currentDistribution.length > 0 && (
             <div className="text-center">
               <span className="distance-badge text-base sm:text-lg">
-                Distance: {attempts[0].distance.toFixed(4)}
+                Distance: {calculateDistance(currentDistribution, targetDistribution).toFixed(4)}
               </span>
             </div>
           )}
@@ -557,7 +673,11 @@ const DiceProbabilityGame = () => {
               </thead>
               <tbody>
                 {attempts.slice(0, 5).map((attempt, i) => (
-                  <tr key={i} className={i === 0 ? "best-attempt" : ""}>
+                  <tr
+                    key={i}
+                    className={`${i === 0 ? "best-attempt" : ""} cursor-pointer`}
+                    onClick={() => loadExpression(attempt.expression)}
+                  >
                     <td className="font-mono text-base sm:text-lg">{attempt.expression}</td>
                     <td className="font-semibold text-base sm:text-lg">{attempt.distance.toFixed(4)}</td>
                   </tr>
