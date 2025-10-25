@@ -48,6 +48,31 @@ const getPracticeSeed = (): number => {
   return Math.floor(Math.random() * 900000000) + 100000000; // Range: 100000000-999999999
 };
 
+// Generate a simple player ID from user agent
+const generatePlayerId = (): string => {
+  const ua = navigator.userAgent;
+  // Create a simple hash from user agent
+  let hash = 0;
+  for (let i = 0; i < ua.length; i++) {
+    const char = ua.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return `player_${Math.abs(hash)}`;
+};
+
+// Submit hiscore to API
+const submitHiscore = async (seed: number, guessCount: number, finalExpression: string, playerId: string) => {
+  try {
+    const url = `https://biscuitverse-api-production.up.railway.app/api/v1/record-dice-match?seed=${seed}&guess_count=${guessCount}&final_expression=${encodeURIComponent(finalExpression)}&player=${encodeURIComponent(playerId)}&auth=DDD-2PM-TOKEN-XXXX`;
+    const response = await fetch(url, { method: 'GET' });
+    return response.ok;
+  } catch (error) {
+    console.error('Failed to submit hiscore:', error);
+    return false;
+  }
+};
+
 const DiceProbabilityGame = () => {
   // Game state
   const [targetExpression, setTargetExpression] = useState(null);
@@ -62,6 +87,8 @@ const DiceProbabilityGame = () => {
   const [graphType, setGraphType] = useState('filled-line'); // Options: 'filled-line', 'line', 'bar'
   const [selectedItem, setSelectedItem] = useState(null); // For tap-to-swap interface
   const [currentSeed, setCurrentSeed] = useState<number | null>(null); // Track current puzzle seed
+  const [isSolved, setIsSolved] = useState(false); // Track if current puzzle is solved
+  const [hiscoreSubmitted, setHiscoreSubmitted] = useState(false); // Track if hiscore was submitted
 
   // Initialize the game
   useEffect(() => {
@@ -100,6 +127,10 @@ const DiceProbabilityGame = () => {
 
     // Reset selection
     setSelectedItem(null);
+
+    // Reset solved state
+    setIsSolved(false);
+    setHiscoreSubmitted(false);
   };
 
   // Create an expression string from dice and operators
@@ -302,16 +333,38 @@ const DiceProbabilityGame = () => {
       // Check if this expression already exists
       const existingIndex = prev.findIndex(a => a.expression === expression);
 
+      let updated;
       if (existingIndex !== -1) {
         // Expression exists, update its timestamp
-        const updated = [...prev];
+        updated = [...prev];
         updated[existingIndex] = newAttempt;
-        return updated.sort((a, b) => a.distance - b.distance);
+        updated = updated.sort((a, b) => a.distance - b.distance);
       } else {
         // New expression, add it
-        const updated = [...prev, newAttempt];
-        return updated.sort((a, b) => a.distance - b.distance);
+        updated = [...prev, newAttempt];
+        updated = updated.sort((a, b) => a.distance - b.distance);
       }
+
+      // Check if puzzle is solved (distance very close to 0)
+      if (distance < 0.0001 && !isSolved && currentSeed !== null) {
+        setIsSolved(true);
+
+        // Only submit hiscore for daily puzzles (seeds < 100000000)
+        if (currentSeed < 100000000 && !hiscoreSubmitted) {
+          const playerId = generatePlayerId();
+          const guessCount = updated.length;
+
+          // Submit hiscore
+          submitHiscore(currentSeed, guessCount, expression, playerId).then(success => {
+            if (success) {
+              setHiscoreSubmitted(true);
+              console.log('Hiscore submitted successfully!');
+            }
+          });
+        }
+      }
+
+      return updated;
     });
   };
 
@@ -602,6 +655,18 @@ const DiceProbabilityGame = () => {
       {/* Current Expression Editor */}
       <div className="fantasy-card p-4 sm:p-6">
         <h2 className="fantasy-section-header text-xl sm:text-2xl">Your Expression</h2>
+        {isSolved && (
+          <div className="mb-4 p-4 bg-green-100 dark:bg-green-900 border-2 border-green-500 rounded-lg text-center">
+            <div className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
+              Puzzle Solved!
+            </div>
+            {hiscoreSubmitted && currentSeed && currentSeed < 100000000 && (
+              <div className="text-base text-green-600 dark:text-green-400">
+                Your score has been submitted to the leaderboard
+              </div>
+            )}
+          </div>
+        )}
         <div className="expression-display mb-4 text-lg sm:text-xl">
           {getFormattedExpression()}
         </div>
